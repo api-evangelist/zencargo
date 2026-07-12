@@ -1,0 +1,46 @@
+generated: '2026-07-12'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + documentation/API hosts
+hosts:
+- host: zencargo.com
+  https: true
+  tls_version: TLSv1.3
+  cert_issuer: Google Trust Services (WR3)
+  cert_expires: Sep  2 06:31:18 2026 GMT
+  hsts: false
+  notes: Apex returns 301 redirect to www; no HSTS header observed on apex.
+- host: api-docs.zencargo.com
+  https: true
+  tls_version: TLSv1.3
+  cert_issuer: Google Trust Services (WR3)
+  cert_expires: Oct  2 01:26:23 2026 GMT
+  hsts: false
+  notes: Static GraphQL API documentation served from Google Cloud Storage.
+- host: graphql.zencargo.com
+  https: true
+  tls_version: TLSv1.3
+  cert_issuer: Google Trust Services (WR3)
+  cert_expires: Sep 23 18:02:47 2026 GMT
+  hsts: false
+  notes: Live Apollo Router GraphQL gateway; unauthenticated requests get CSRF-preflight / auth-gated errors.
+- host: app.zencargo.com
+  https: true
+  tls_version: TLSv1.3
+  cert_issuer: Google Trust Services (WR3)
+  cert_expires: Sep 23 18:02:47 2026 GMT
+  hsts: true
+  hsts_max_age: 31536000
+  hsts_include_subdomains: true
+  notes: Web application (API key & webhook management).
+domains:
+- domain: zencargo.com
+  dnssec: false
+  caa: []
+  spf: true
+  spf_record: v=spf1 include:_spf.google.com include:mailgun.org ~all
+  dmarc: true
+  dmarc_policy: none
+  dmarc_subdomain_policy: none
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

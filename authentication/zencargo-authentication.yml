@@ -1,0 +1,37 @@
+generated: '2026-07-12'
+method: documented
+source: https://api-docs.zencargo.com/authenticating/
+summary:
+  types:
+  - http
+schemes:
+- name: basicAuth
+  type: http
+  scheme: basic
+  description: >-
+    Zencargo uses HTTP Basic Authentication for its GraphQL API. Use the API
+    Key's ID (an auto-generated UUID) as the username and the API Key's secret
+    as the password. Join them with a single colon (keyId:secret), base64-encode
+    the result, and send it as `Authorization: Basic <base64>`. API keys are
+    generated per user in the Zencargo app under Profile Settings > API Keys
+    (production keys at https://app.zencargo.com/dashboard/settings/api-keys);
+    the secret is shown only once at creation. The API URL itself is
+    customer-provisioned per tenant and environment
+    (https://{accountReference}.api.{environment}.zencargo.com/graphql).
+  sources:
+  - https://api-docs.zencargo.com/authenticating/
+  - https://api-docs.zencargo.com/generating_api_key/
+  - https://api-docs.zencargo.com/requesting_api_url/
+webhookVerification:
+  method: HMAC-SHA256
+  header: Zencargo-Hmac-SHA256
+  encoding: base64
+  description: >-
+    Outbound webhook requests include a base64-encoded Zencargo-Hmac-SHA256
+    header computed from the webhook's sign token (shown once at webhook
+    creation) and the request body. Recompute the HMAC digest and compare to
+    verify the request originated from Zencargo.
+  source: https://api-docs.zencargo.com/webhooks/
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

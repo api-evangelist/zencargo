@@ -1,0 +1,133 @@
+aid: zencargo
+name: Zencargo
+review:
+  question: Does Zencargo expose a documented public WebSocket API?
+  answer: false
+  date: '2026-07-12'
+  reviewer: API Evangelist
+  asyncapiSpecCreated: false
+  asyncapiScopeNote: |
+    No AsyncAPI document was authored. Zencargo's public API is a single
+    GraphQL endpoint served over HTTPS (POST /graphql); the documented schema
+    has a QueryRoot and a Mutation type but no Subscription type, so there is
+    no GraphQL-subscription-over-WebSocket transport to model. Zencargo does
+    deliver realtime-ish updates, but via outbound HTTP webhooks (server POSTs
+    a JSON payload to a customer-hosted HTTPS callback URL), which is
+    request/response HTTP push, not a WebSocket (ws:// or wss://) channel and
+    not an SSE stream on Zencargo's own API.
+findings:
+  summary: |
+    Zencargo does not publish a documented public WebSocket API. Zencargo is a
+    digital freight forwarder and supply-chain visibility platform. Its public
+    API is GraphQL: every operation is an HTTPS POST to a single /graphql
+    endpoint on a per-tenant subdomain of the form
+    https://{accountReference}.api.{environment}.zencargo.com/graphql, issued
+    to the customer by their Zencargo account manager. Authentication is HTTP
+    Basic using an API Key ID (UUID) as the username and its secret as the
+    password (Authorization: Basic base64(id:secret)). The documented GraphQL
+    schema exposes a QueryRoot (bookings, purchaseOrder(s), products,
+    coreProducts, packingLists, account, searchAssignableAccounts) and a
+    Mutation type (product/category/attribute CRUD, purchaseOrders* order and
+    lot mutations). There is NO Subscription type. Event delivery is handled by
+    outbound HTTP webhooks: Zencargo POSTs {topic, targetType, targetId} JSON
+    to a customer HTTPS callback with a base64 Zencargo-Hmac-SHA256 signature.
+    No realtime, bidirectional, or streaming WebSocket endpoint is documented.
+  accessModel: |
+    The API is customer-provisioned and not openly self-service. A prospective
+    integrator must be a Zencargo customer, request staging + production API
+    URLs from their account manager, and generate API-key credentials in the
+    Zencargo app (Profile Settings > API Keys; production keys at
+    https://app.zencargo.com/dashboard/settings/api-keys). A live GraphQL
+    gateway exists at https://graphql.zencargo.com/ (Apollo Federation / Apollo
+    Router) and at each tenant subdomain, but both reject unauthenticated
+    introspection, so the schema in this entry is modeled from the public
+    documentation at https://api-docs.zencargo.com rather than introspected.
+  transports:
+    - protocol: GraphQL
+      scheme: https
+      baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+      documented: true
+      note: Single POST /graphql endpoint per tenant. HTTP Basic auth. This is the primary and only interactive API surface.
+    - protocol: GraphQL (federation gateway)
+      scheme: https
+      baseURL: https://graphql.zencargo.com/
+      documented: false
+      note: Live Apollo Router endpoint (confirmed via a CSRF/preflight error and an auth-gated rhai access check). Not documented as the public integration URL; tenant subdomains are.
+    - protocol: Webhook
+      scheme: https
+      documented: true
+      note: Outbound HTTP callbacks. Zencargo POSTs JSON (topic/targetType/targetId) to a customer HTTPS URL, signed with a base64 Zencargo-Hmac-SHA256 header. Server-to-endpoint HTTP, not WebSocket.
+    - protocol: WebSocket
+      scheme: wss
+      documented: false
+      note: No WebSocket endpoint and no GraphQL Subscription type are documented anywhere in Zencargo's API docs as of the review date.
+  graphqlSchemaConfirmed:
+    queryRoot:
+      - account(uuid)
+      - searchAssignableAccounts(accountId, filters)
+      - products(first, after, nameContains)
+      - coreProducts
+      - purchaseOrder(orderReferenceNumber)
+      - purchaseOrders
+      - bookings(zencargoReferences)
+      - packingLists(findBy)
+    mutation:
+      - productsCreateProduct / productsUpdateProduct / productsArchiveProduct / productsUnarchiveProduct
+      - createCoreProduct / updateCoreProduct / archiveCoreProduct
+      - createCoreProductCategory / updateCoreProductCategory / deleteCoreProductCategory
+      - createCoreProductAttribute / updateCoreProductAttribute / deleteCoreProductAttribute
+      - purchaseOrdersCreateOrder / purchaseOrdersCloseOrder / purchaseOrdersDeleteOrder / purchaseOrdersUpdateLotEstimates
+    subscription: none documented
+  confirmedVsModeled:
+    confirmed:
+      - GraphQL transport, single POST /graphql endpoint, per-tenant subdomain pattern (documented).
+      - HTTP Basic authentication with API Key ID + secret, base64-encoded (documented, with a worked example).
+      - Booking, VoyageMilestone, ScheduledLeg, CargoJourneyDetail, PurchaseOrder, Lot, OrderedLineItem, Product, CoreProduct, PackingList, Account object field names (transcribed from the reference).
+      - Enum values for VoyageMilestoneNameEnum, BookingStageEnum, CoreModeOfTransport, IncotermsValue, LoadTypeEnum (transcribed).
+      - Webhook payload shape {topic, targetType, targetId}, HMAC-SHA256 signing, retry policy (documented).
+      - No Subscription type / no WebSocket (documented absence).
+    modeled:
+      - The consolidated GraphQL SDL in graphql/zencargo.graphql is hand-authored from the docs; field sets on the largest objects are trimmed and some long enums (Currency, CountryCode) are partial.
+      - Input-object and payload shapes are reconstructed from the documented mutation guides and may differ from the live schema in nullability or exact field names.
+      - Plans, rate limits, and FinOps figures are not published by Zencargo (enterprise, contact-sales) and are modeled with reconciled:false.
+  endpointsConfirmed:
+    - POST https://{accountReference}.api.{environment}.zencargo.com/graphql
+    - POST (webhook) -> customer HTTPS callback URL registered at https://app.zencargo.com/dashboard/settings/webhooks
+sources:
+  - url: https://api-docs.zencargo.com/
+    type: Documentation
+    note: Zencargo GraphQL API documentation index (spectaql-generated, hosted on Google Cloud Storage).
+  - url: https://api-docs.zencargo.com/requesting_api_url/
+    type: Documentation
+    note: Per-tenant endpoint pattern https://{accountReference}.api.{environment}.zencargo.com; staging + production issued by account manager.
+  - url: https://api-docs.zencargo.com/authenticating/
+    type: Documentation
+    note: HTTP Basic auth; API Key ID as username, secret as password, base64; Authorization Basic header with worked curl example.
+  - url: https://api-docs.zencargo.com/first_graphql_call/
+    type: Documentation
+    note: All requests are POST /graphql; operation defined in the JSON body under "query".
+  - url: https://api-docs.zencargo.com/object/booking/
+    type: APIReference
+    note: Booking object fields (scheduledLegs, cargoJourneyDetails, bookingDocuments, incoterms, loadType, modeOfTransport, voyageMilestone).
+  - url: https://api-docs.zencargo.com/object/voyagemilestone/
+    type: APIReference
+    note: VoyageMilestone fields (actual, latestEstimate, originalEstimate, occurred, vesselName, portName).
+  - url: https://api-docs.zencargo.com/webhooks/
+    type: Documentation
+    note: Outbound HTTPS webhooks, JSON payload, Zencargo-Hmac-SHA256 signature, 5s timeout + retry policy. No WebSocket.
+  - url: https://graphql.zencargo.com/
+    type: APIEndpoint
+    note: Live Apollo Router GraphQL gateway; returns CSRF-preflight and auth-gated rhai errors to unauthenticated probes (confirms a real, credential-walled GraphQL endpoint).
+  - url: https://github.com/zencargo
+    type: SourceCode
+    note: Public org (Apollo router config, EDIFACT parser, infra). No public API client/SDK for the customer GraphQL API.
+actions:
+  asyncapiPath: null
+  apisYmlUpdated: true
+  reason: |
+    No WebSocket protocol surface exists. Zencargo's public API is GraphQL over
+    a single HTTPS POST /graphql endpoint with no Subscription type; event
+    delivery is via outbound HTTP webhooks. No AsyncAPI document was created
+    because there is no server-push WebSocket or SSE transport on Zencargo's own
+    API to model. The GraphQL SDL was authored as the primary specification and
+    linked from every GraphQL API surface in apis.yml.

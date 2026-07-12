@@ -1,0 +1,147 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Zencargo GraphQL API",
+    "version": "1.0",
+    "description": "Zencargo digital freight forwarding & supply-chain GraphQL API. All operations are POST requests to a single per-tenant endpoint (https://{accountReference}.api.{environment}.zencargo.com/graphql), authenticated with HTTP Basic using an API Key ID and secret. Operations are grounded in the public docs at https://api-docs.zencargo.com."
+  },
+  "request": {
+    "auth": {
+      "type": "basic",
+      "username": "{{apiKeyId}}",
+      "password": "{{apiKeySecret}}"
+    }
+  },
+  "items": [
+    {
+      "info": { "name": "Bookings", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Query booking documents by reference", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { zencargoReference bookingDocuments { documentType description assetUrl } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" }
+          },
+          "docs": "Fetch a booking and its attached documents (assetUrl is the download link)."
+        },
+        {
+          "info": { "name": "Query booking cargo and parties", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { zencargoReference modeOfTransport loadType incoterms { value } consignor { label { long } } consignee { label { long } } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" }
+          },
+          "docs": "Retrieve mode of transport, load type, incoterms, and parties for a booking."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Shipment Visibility", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Query scheduled legs and voyage milestone", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { scheduledLegs { modeOfTransport fromTerminal { name } toTerminal { name } estimatedDepartureDate estimatedArrivalDate } voyageMilestone { name occurred latestEstimate vesselName } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" }
+          },
+          "docs": "Track shipment progress via scheduled legs and the current voyage milestone."
+        },
+        {
+          "info": { "name": "Query cargo journey details", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { cargoJourneyDetails { cargoId estimatedCollectionDateTime actualCollectionDateTime estimatedDeliveryDateTime actualDeliveryDateTime } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" }
+          },
+          "docs": "Estimated vs. actual collection and delivery per cargo."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Purchase Orders", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create a purchase order", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"mutation($input: CreateOrderInput!) { purchaseOrdersCreateOrder(input: $input) { purchaseOrder { orderReferenceNumber } errors { path message } } }\",\n  \"variables\": { \"input\": { \"orderReferenceNumber\": \"PO-SEAWARD-2\", \"orderDate\": \"2021-01-01\", \"orderedLineItems\": [ { \"productSku\": \"10000\", \"quantityOrdered\": 10000, \"cbm\": 32.0, \"initialCargoReadyDate\": \"2020-03-16\", \"requiredDeliveryDate\": \"2020-05-04\" } ] } }\n}" }
+          },
+          "docs": "Create a purchase order with ordered line items (PurchaseOrdersCreateOrder mutation)."
+        },
+        {
+          "info": { "name": "Query a purchase order", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($ref: String!) { purchaseOrder(orderReferenceNumber: $ref) { orderReferenceNumber orderedLineItems { product { skuCode } quantityOrdered lots { quantityFulfilled cargoReadyDate { date } } } } }\",\n  \"variables\": { \"ref\": \"PO-SEAWARD-2\" }\n}" }
+          },
+          "docs": "Retrieve a purchase order with its line items and SKU-level Lots."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Products", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Query products (SKU codes)", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query { products(first: 20) { nodes { name skuCode } } }\"\n}" }
+          },
+          "docs": "List products and their SKU codes (the documented first-call example)."
+        },
+        {
+          "info": { "name": "Create a core product", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"mutation($input: CreateCoreProductInput!) { createCoreProduct(input: $input) { coreProduct { id skuCode } errors { path message } } }\",\n  \"variables\": { \"input\": { \"name\": \"Frozen Banana\", \"skuCode\": \"10000\" } }\n}" }
+          },
+          "docs": "Create a core product (createCoreProduct mutation)."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Packing Lists", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Query packing lists for a booking", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($findBy: PackingListFindBy!) { packingLists(findBy: $findBy) { nodes { cargo { grossWeight { value unit } } lines { quantity lot { product { skuCode } } } } } }\",\n  \"variables\": { \"findBy\": { \"key\": \"BOOKING_REFERENCE\", \"value\": \"ZTEST-1\" } }\n}" }
+          },
+          "docs": "Query packing lists for a booking (BOOKING_REFERENCE) or a cargo (CARGO_ID)."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Accounts & Locations", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Query account with products", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query { account(uuid: \\\"a7353774-9795-434b-a1f8-7582b6afd345\\\") { label { long } products(first: 5) { nodes { name skuCode } } } }\"\n}" }
+          },
+          "docs": "Retrieve an account by UUID with a nested products connection."
+        },
+        {
+          "info": { "name": "Search assignable accounts", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql",
+            "body": { "type": "json", "data": "{\n  \"query\": \"query($accountId: String!, $filters: SearchAssignableAccountsFiltersInput!) { searchAssignableAccounts(accountId: $accountId, searchAssignableAccountsFiltersInput: $filters) { nodes { account { label { long } } connectionType } } }\",\n  \"variables\": { \"accountId\": \"a7353774-9795-434b-a1f8-7582b6afd345\", \"filters\": { \"accountTypes\": [\"SUPPLIER\"] } }\n}" }
+          },
+          "docs": "Search assignable accounts (e.g. suppliers) to resolve origin/destination/manufacturer IDs."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

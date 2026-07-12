@@ -1,0 +1,65 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: Zencargo
+providerId: zencargo
+created: '2026-07-12'
+modified: '2026-07-12'
+reconciled: false
+tags:
+- Freight Forwarding
+- Supply Chain
+- GraphQL
+- Rate Limiting
+- Quotas
+description: >-
+  Zencargo does not publish numeric rate limits for its GraphQL API in the
+  public documentation. As a customer-provisioned enterprise API, throttling and
+  fair-use limits are governed per account and coordinated with the customer's
+  account manager rather than advertised as a public per-minute cap. For
+  webhooks, Zencargo documents an operational reliability policy rather than a
+  rate limit: each delivery has a five-second response timeout, failed deliveries
+  are retried up to five times over the following five hours, and a subscription
+  is automatically disabled after five consecutive failures (with a warning email
+  to the registered contact).
+notes: >-
+  No numeric per-account or per-endpoint GraphQL request limits are documented as
+  of the review date. Verify any applicable limits with your Zencargo account
+  manager. Webhook retry/timeout values are quoted from the webhooks guide.
+sources:
+- https://api-docs.zencargo.com/
+- https://api-docs.zencargo.com/webhooks/
+- https://api-docs.zencargo.com/first_graphql_call/
+responseCodes:
+  throttled: 429
+limits:
+- name: GraphQL API Requests
+  scope: account
+  metric: requests
+  limit: not published
+  notes: No fixed numeric request-rate limit is documented for the GraphQL API; governed per enterprise account.
+- name: Webhook Delivery Timeout
+  scope: webhook
+  metric: seconds
+  limit: 5
+  notes: Zencargo waits five seconds for a 200 response from the customer's callback URL.
+- name: Webhook Retry Attempts
+  scope: webhook
+  metric: retries
+  limit: 5
+  notes: Failed deliveries are retried up to five times over the following five hours.
+- name: Webhook Auto-Disable Threshold
+  scope: webhook
+  metric: consecutive_failures
+  limit: 5
+  notes: After five consecutive failures the webhook subscription is automatically disabled.
+policies:
+- name: Webhook Retry
+  description: Failed webhook deliveries are retried 5 times over 5 hours before the subscription is disabled.
+- name: No Redirect Following
+  description: Webhook callbacks must return a 2XX directly; 3XX redirects are treated as an error (Zencargo does not follow them).
+- name: Backoff Strategy
+  description: Clients of the GraphQL API should implement exponential backoff with jitter and honor Retry-After on 429 responses.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

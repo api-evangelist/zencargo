@@ -1,0 +1,62 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: Zencargo
+providerId: zencargo
+created: '2026-07-12'
+modified: '2026-07-12'
+reconciled: false
+tags:
+- Freight Forwarding
+- Supply Chain
+- Logistics
+- SaaS
+- Plans
+description: >-
+  Zencargo does not publish self-service or list pricing for its platform or its
+  GraphQL API. Zencargo is an enterprise digital freight forwarder: commercial
+  terms are arranged directly with the customer and typically combine freight
+  forwarding services (priced per shipment / per movement) with access to the
+  supply-chain visibility platform. API access is a feature of a customer's
+  Zencargo account rather than a separately metered product - an account manager
+  provisions the staging and production API URLs and enables features such as
+  webhooks on request. There is no free tier, no public sign-up for the API, and
+  no published per-call price.
+notes: >-
+  All figures here are modeled from the access model documented at
+  api-docs.zencargo.com; Zencargo publishes no numeric pricing. Reconcile actual
+  commercial terms directly with Zencargo sales.
+sources:
+- https://www.zencargo.com/
+- https://www.zencargo.com/ai-platform/
+- https://api-docs.zencargo.com/requesting_api_url/
+- https://api-docs.zencargo.com/generating_api_key/
+plans:
+- id: zencargo-enterprise
+  name: Enterprise (Contact Sales)
+  type: enterprise
+  description: >-
+    Enterprise engagement covering freight forwarding services and access to the
+    Zencargo supply-chain visibility platform, including the GraphQL API and
+    webhooks. Provisioned per customer with dedicated staging and production API
+    endpoints and API-key credentials. Pricing is negotiated and not published.
+  entries:
+  - label: Platform and API Access
+    name: platform_and_api_access
+    type: flat
+    metric: contract
+    limit: -1
+    timeFrame: year
+    geo: global
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  elements:
+  - name: GraphQL API (Bookings, Visibility, Purchase Orders, Products, Packing Lists, Accounts)
+  - name: Outbound Webhooks
+  - name: Dedicated Staging and Production Endpoints
+  - name: Freight Forwarding Services
+  - name: Supply Chain Visibility Platform
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

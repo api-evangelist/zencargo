@@ -1,0 +1,85 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+provider: Zencargo
+providerId: zencargo
+created: '2026-07-12'
+modified: '2026-07-12'
+reconciled: false
+tags:
+- Freight Forwarding
+- Supply Chain
+- Logistics
+- SaaS
+- FinOps
+- Cost Management
+- FOCUS
+description: >-
+  FinOps view of Zencargo spend. Zencargo is an enterprise digital freight
+  forwarder and supply-chain visibility platform; it does not publish list or
+  usage-based pricing, and the GraphQL API is not separately metered. Cost is
+  driven by the freight forwarding engagement (per shipment / per movement) and
+  the platform subscription negotiated with Zencargo, not by API call volume.
+  The dominant cost signal for a customer is therefore shipment and movement
+  volume across ocean, air, road, and rail, allocated by trade lane, supplier,
+  and business unit - the same dimensions the API exposes on bookings and
+  purchase orders.
+notes: >-
+  Per-unit rates are not reconciled here; Zencargo publishes no pricing. This is
+  a modeled FinOps framing based on the documented enterprise access model.
+  Reconcile actual charges against your Zencargo commercial agreement and
+  invoices.
+sources:
+- https://www.zencargo.com/
+- https://www.zencargo.com/ai-platform/
+- https://api-docs.zencargo.com/
+- https://focus.finops.org/focus-specification/v1-3/
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+publisherName: Zencargo
+serviceCategory: Logistics and Supply Chain
+billingModel:
+  pricingCategory: Contract-Based
+  billingFrequency: Monthly
+  billingCurrency: GBP
+  chargeCategories:
+  - Usage
+  - Purchase
+meters:
+- name: shipments
+  description: Freight bookings / shipments managed through Zencargo, the primary cost driver.
+  unit: shipments
+  aggregation: sum
+  dimensions:
+  - account
+  - trade_lane
+  - mode_of_transport
+- name: movements
+  description: Individual carriage movements (legs) across ocean, air, road, and rail.
+  unit: movements
+  aggregation: sum
+  dimensions:
+  - account
+  - mode_of_transport
+- name: platform_subscription
+  description: Recurring platform / visibility subscription fee negotiated per contract.
+  unit: contract
+  aggregation: sum
+  dimensions:
+  - account
+principles:
+- name: Visibility
+  description: Track shipment and movement volume by trade lane and mode of transport via the Bookings and Shipment Visibility APIs; reconcile against Zencargo invoices.
+- name: Allocation
+  description: Use booking parties (consignor/consignee), origin/destination, and purchase-order references to map freight spend to suppliers and business units.
+- name: Optimization
+  description: Consolidate shipments (FCL vs LCL), improve cargo-ready-date accuracy, and reduce delays surfaced by voyage milestones to lower freight and demurrage costs.
+- name: Accountability
+  description: Assign owners per trade lane / supplier; review shipment volume and delay costs against the negotiated Zencargo agreement.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

@@ -1,0 +1,186 @@
+aid: zencargo
+url: https://raw.githubusercontent.com/api-evangelist/zencargo/refs/heads/main/apis.yml
+name: Zencargo
+kind: company
+description: Zencargo is a digital freight forwarder and supply-chain visibility
+  platform for ocean, air, road, and rail shipments. Its GraphQL API gives
+  enterprise customers programmatic access to bookings, shipment tracking and
+  voyage milestones, purchase orders, products, packing lists, and accounts, plus
+  HTTP webhooks for booking and purchase-order events. The API is
+  customer-provisioned - each account is issued a dedicated staging and
+  production endpoint and API-key credentials by their Zencargo account manager.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+tags:
+- Freight Forwarding
+- Supply Chain
+- Logistics
+- Ocean Freight
+- Shipment Tracking
+- Bookings
+- Supply Chain Visibility
+- Freight
+- SaaS
+- GraphQL
+created: '2026-07-12'
+modified: '2026-07-12'
+specificationVersion: '0.19'
+apis:
+- aid: zencargo:zencargo-bookings-api
+  name: Zencargo Bookings API
+  tags:
+  - Bookings
+  - Freight
+  - GraphQL
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/download_booking_documents/
+  baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+  properties:
+  - url: https://api-docs.zencargo.com/download_booking_documents/
+    type: Documentation
+  - url: https://api-docs.zencargo.com/object/booking/
+    type: APIReference
+  - url: graphql/zencargo.graphql
+    type: GraphQL
+  description: 'Query bookings by Zencargo reference and retrieve booking details:
+    cargo, consignor/consignee, forwarder, incoterms, load type, mode of transport,
+    bills of lading, required delivery date, and attached booking documents
+    (assetUrl for download). GraphQL over a single POST /graphql endpoint.'
+- aid: zencargo:zencargo-shipment-visibility-api
+  name: Zencargo Shipment Visibility API
+  tags:
+  - Shipment Tracking
+  - Supply Chain Visibility
+  - Milestones
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/object/voyagemilestone/
+  baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+  properties:
+  - url: https://api-docs.zencargo.com/object/scheduledleg/
+    type: Documentation
+  - url: https://api-docs.zencargo.com/object/voyagemilestone/
+    type: APIReference
+  - url: graphql/zencargo.graphql
+    type: GraphQL
+  description: Track shipment progress through scheduled carriage legs, cargo
+    journey details (estimated/actual collection and delivery), and voyage
+    milestones (collected, gate in, cargo aboard, departed/arrived terminal,
+    delivered) with estimated and actual timestamps for predictive ETAs.
+- aid: zencargo:zencargo-purchase-orders-api
+  name: Zencargo Purchase Orders API
+  tags:
+  - Purchase Orders
+  - Supply Chain
+  - Lots
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/query_purchase_orders/
+  baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+  properties:
+  - url: https://api-docs.zencargo.com/create_purchase_orders/
+    type: Documentation
+  - url: https://api-docs.zencargo.com/object/purchaseorder/
+    type: APIReference
+  - url: graphql/zencargo.graphql
+    type: GraphQL
+  description: Create, query, update, close, and delete purchase orders and their
+    ordered line items and SKU-level Lots. Keeps an ERP in sync with Zencargo as
+    the source of truth for pre-booking PO data (cargo ready dates, quantities
+    fulfilled, delivery estimates).
+- aid: zencargo:zencargo-products-api
+  name: Zencargo Products API
+  tags:
+  - Products
+  - Catalog
+  - SKU
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/query_product/
+  baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+  properties:
+  - url: https://api-docs.zencargo.com/create_product/
+    type: Documentation
+  - url: https://api-docs.zencargo.com/object/coreproduct/
+    type: APIReference
+  - url: graphql/zencargo.graphql
+    type: GraphQL
+  description: Manage the product catalog - create, query, update, archive, and
+    unarchive products (and core products with characteristics, dimensions,
+    weights, tariff codes, and pricing), plus product categories and attributes.
+- aid: zencargo:zencargo-packing-lists-api
+  name: Zencargo Packing Lists API
+  tags:
+  - Packing Lists
+  - Cargo
+  - FCL
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/query_packing_lists/
+  baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+  properties:
+  - url: https://api-docs.zencargo.com/query_packing_lists/
+    type: Documentation
+  - url: https://api-docs.zencargo.com/object/packinglist/
+    type: APIReference
+  - url: graphql/zencargo.graphql
+    type: GraphQL
+  description: Query packing lists for a booking (BOOKING_REFERENCE) or a specific
+    cargo (CARGO_ID), returning per-container lines with the Lot and Product
+    behind each packed item. Available for POs on FCL bookings.
+- aid: zencargo:zencargo-accounts-locations-api
+  name: Zencargo Accounts and Locations API
+  tags:
+  - Accounts
+  - Locations
+  - Network
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/query_accounts_and_locations/
+  baseURL: https://{accountReference}.api.production.zencargo.com/graphql
+  properties:
+  - url: https://api-docs.zencargo.com/query_accounts_and_locations/
+    type: Documentation
+  - url: https://api-docs.zencargo.com/object/account/
+    type: APIReference
+  - url: graphql/zencargo.graphql
+    type: GraphQL
+  description: Retrieve account details by UUID and search assignable accounts
+    (customers, suppliers, manufacturers) and their locations to resolve the
+    origin, destination, and manufacturer IDs referenced when creating purchase
+    orders and bookings.
+- aid: zencargo:zencargo-webhooks
+  name: Zencargo Webhooks
+  tags:
+  - Webhooks
+  - Events
+  - Notifications
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://api-docs.zencargo.com/webhooks/
+  properties:
+  - url: https://api-docs.zencargo.com/webhooks/
+    type: Documentation
+  description: Outbound HTTP webhooks. Zencargo POSTs a JSON payload (topic,
+    targetType, targetId) to a customer-registered HTTPS callback URL when events
+    such as BOOKING_CREATED occur, signed with a base64 Zencargo-Hmac-SHA256
+    header for verification. This is server-to-endpoint HTTP push, not a
+    WebSocket or GraphQL subscription. Subscriptions are configured in the
+    Zencargo app, not via the API.
+common:
+- type: DomainSecurity
+  url: security/zencargo-domain-security.yml
+- type: Authentication
+  url: authentication/zencargo-authentication.yml
+- type: GitHubOrganization
+  url: https://github.com/zencargo
+- type: LinkedIn
+  url: https://www.linkedin.com/company/zencargo
+- type: Website
+  url: https://www.zencargo.com/
+- type: Documentation
+  url: https://api-docs.zencargo.com/
+- type: Plans
+  url: plans/zencargo-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/zencargo-rate-limits.yml
+- type: FinOps
+  url: finops/zencargo-finops.yml
+- url: https://www.zencargo.com/resources/
+  type: Blog
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

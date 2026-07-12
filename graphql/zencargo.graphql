@@ -1,0 +1,996 @@
+"""
+Zencargo GraphQL API — representative SDL.
+
+Zencargo exposes a single GraphQL API for its digital freight forwarding and
+supply-chain visibility platform. All operations are HTTPS POST requests to one
+per-tenant endpoint:
+
+    https://{accountReference}.api.{environment}.zencargo.com/graphql
+
+Authentication is HTTP Basic (API Key ID as username, secret as password),
+sent as `Authorization: Basic base64(keyId:secret)`.
+
+This SDL is grounded in the public API documentation at
+https://api-docs.zencargo.com (queries, mutations, object types, and enums are
+transcribed from the documented schema). It is a representative, hand-authored
+schema: field sets for the largest objects are trimmed to the documented,
+load-bearing fields, and some scalar/enum value lists are partial where the
+upstream reference paginates long enumerations. The live schema is
+introspectable only with tenant credentials via the in-app API Console, so this
+document should be treated as an accurate model rather than a byte-for-byte
+export. No Subscription type is documented; realtime updates are delivered via
+HTTP webhooks (see /webhooks), not GraphQL subscriptions over WebSocket.
+"""
+
+# ─────────────────────────────────────────────
+# Scalars (documented custom scalars)
+# ─────────────────────────────────────────────
+
+scalar LocalDateTimeType
+scalar LocalDateTimeWithNoTimeZone
+scalar RichDateTime
+scalar ISO8601Date
+scalar BigDecimal
+
+# ─────────────────────────────────────────────
+# Enums (documented)
+# ─────────────────────────────────────────────
+
+enum CoreModeOfTransport {
+  AIR
+  OCEAN
+  RAIL
+  ROAD
+}
+
+"Main mode of transport for a booking."
+enum ModeOfTransport {
+  OCEAN
+  AIR
+  RAIL
+  ROAD
+}
+
+enum ScheduledModeOfTransportEnum {
+  OCEAN
+  AIR
+  RAIL
+  ROAD
+  TRUCK
+}
+
+enum BookingStageEnum {
+  BOOKING_REQUESTED
+  BOOKING_RECEIVED
+  BOOKING_CONFIRMED
+}
+
+"Named milestones tracked along a voyage."
+enum VoyageMilestoneNameEnum {
+  collected
+  gate_in
+  cargo_aboard
+  departed_origin_terminal
+  arrived_at_destination_terminal
+  cargo_unloaded
+  gate_out
+  gate_out_empty
+  delivered
+}
+
+enum IncotermsValue {
+  exworks
+  fca
+  fas
+  fob
+  cfr
+  cif
+  cpt
+  cip
+  dap
+  dat
+  ddp
+}
+
+enum LoadTypeEnum {
+  CY_CY
+  CFS_CY
+  CFS_CFS
+}
+
+enum MilestoneEstimateDateType {
+  ESTIMATED
+  CONFIRMED
+  ACTUAL
+}
+
+"Shipment type (e.g. full container load vs. less than container load)."
+enum Shipment {
+  FCL
+  LCL
+  FTL
+  LTL
+}
+
+enum TradeRole {
+  IMPORTER
+  EXPORTER
+  BROKER
+}
+
+enum PackingListFindByEnum {
+  BOOKING_REFERENCE
+  CARGO_ID
+}
+
+enum CoreProductStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum CargoItemTypeEnum {
+  CONTAINER
+  LOOSE_CARGO
+  VEHICLE
+}
+
+enum SortingOrder {
+  ASCENDING
+  DESCENDING
+}
+
+enum AccountConnectionTypeEnum {
+  CUSTOMER
+  SUPPLIER
+  MANUFACTURER
+  FORWARDER
+}
+
+# Long enumerations (Currency, CountryCode, RegionCode, ...) are documented in
+# full at https://api-docs.zencargo.com/enum/ ; representative members below.
+
+enum Currency {
+  GBP
+  USD
+  EUR
+  CNY
+}
+
+enum CountryCode {
+  GB
+  US
+  CN
+  DE
+  NL
+}
+
+# ─────────────────────────────────────────────
+# Interfaces (documented)
+# ─────────────────────────────────────────────
+
+"An assignable network party — a company, organisation, or location label."
+interface NetworksAssignableInterface {
+  label: NetworksLabelType
+}
+
+# ─────────────────────────────────────────────
+# Shared value objects
+# ─────────────────────────────────────────────
+
+type NetworksLabelType {
+  short: String
+  long: String
+}
+
+type NetworksOrgLoc implements NetworksAssignableInterface {
+  label: NetworksLabelType
+  organisationId: String
+  locationId: String
+}
+
+type Address {
+  addressLine1: String
+  addressLine2: String
+  city: String
+  region: String
+  postalCode: String
+  countryCode: CountryCode
+}
+
+type Money {
+  value: Float
+  currency: Currency
+}
+
+type MoneyWithBigDecimalValue {
+  value: BigDecimal
+  currency: Currency
+}
+
+type MetricValue {
+  value: Float
+  unit: String
+}
+
+type RichDate {
+  date: ISO8601Date
+}
+
+type PerUnitCbm {
+  value: Float
+  source: String
+}
+
+type Incoterms {
+  value: IncotermsValue
+  location: String
+}
+
+type UpdatedBy {
+  id: String
+  name: String
+}
+
+type LastUpdated {
+  at: RichDateTime
+  by: UpdatedBy
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+# ─────────────────────────────────────────────
+# Bookings & shipment visibility
+# ─────────────────────────────────────────────
+
+type Booking {
+  "Booking identifier at Zencargo."
+  zencargoReference: String!
+  "Scheduled carriage legs, ordered chronologically; null if not applicable."
+  scheduledLegs: [ScheduledLeg]
+  "Journey detail for cargos on this booking; empty for customs-only bookings."
+  cargoJourneyDetails: [CargoJourneyDetail]!
+  bookingDocuments: [BookingDocument!]!
+  bookingStage: BookingStage
+  cargo: Cargo
+  consignee: NetworksAssignableInterface
+  consignor: NetworksAssignableInterface
+  customer: BookingCustomerType
+  forwarder: NetworksAssignableInterface
+  forwarderReference: String
+  houseBillOfLading: String
+  masterBillOfLading: String
+  incoterms: Incoterms
+  loadType: LoadTypeEnum
+  modeOfTransport: ModeOfTransport
+  shipmentType: Shipment
+  tradeRole: TradeRole
+  networksOrigin: NetworksAssignableInterface
+  networksDestination: NetworksAssignableInterface
+  requiredDeliveryDate: RichDate
+  estimatedArrival: LocalDateTimeType
+  estimatedDeparture: LocalDateTimeType
+  estimatedCollection: LocalDateTimeType
+  estimatedDelivery: LocalDateTimeType
+  "Current voyage milestone (deprecated in favour of scheduledLegs)."
+  voyageMilestone: VoyageMilestone
+  lots(after: String, before: String, first: Int, last: Int): LotConnection
+}
+
+type BookingCustomerType implements NetworksAssignableInterface {
+  label: NetworksLabelType
+  accountUuid: String
+}
+
+type BookingStage {
+  value: BookingStageEnum
+  name: String
+}
+
+type BookingDocument {
+  documentType: String
+  description: String
+  assetUrl: String
+}
+
+type ScheduledLeg {
+  fromTerminal: TransportTerminal
+  toTerminal: TransportTerminal
+  estimatedDepartureDate: ISO8601Date
+  estimatedArrivalDate: ISO8601Date
+  actualDepartureLocalDateTime: LocalDateTimeWithNoTimeZone
+  actualArrivalLocalDateTime: LocalDateTimeWithNoTimeZone
+  modeOfTransport: ScheduledModeOfTransportEnum
+}
+
+type CargoJourneyDetail {
+  cargoId: String
+  collectionStop: AccountLocation
+  estimatedCollectionDateTime: LocalDateTimeWithNoTimeZone
+  estimatedCollectionDateType: MilestoneEstimateDateType
+  actualCollectionDateTime: LocalDateTimeWithNoTimeZone
+  deliveryStop: AccountLocation
+  estimatedDeliveryDateTime: LocalDateTimeWithNoTimeZone
+  estimatedDeliveryDateType: MilestoneEstimateDateType
+  actualDeliveryDateTime: LocalDateTimeWithNoTimeZone
+}
+
+type VoyageMilestone {
+  id: String!
+  name: VoyageMilestoneNameEnum!
+  actual: LocalDateTimeType
+  latestEstimate: LocalDateTimeType
+  originalEstimate: LocalDateTimeType
+  current: Boolean!
+  occurred: Boolean!
+  primary: Boolean!
+  portName: String
+  vesselName: String
+  location: NetworksAssignableInterface
+  updatedAt: RichDateTime!
+  updatedBy: UpdatedBy
+}
+
+type Terminal {
+  name: String
+  unlocode: String
+}
+
+type TransportTerminal {
+  name: String
+  unlocode: String
+  terminalType: String
+  countryCode: CountryCode
+}
+
+type Delay {
+  items: [DelayItem]
+}
+
+type DelayItem {
+  reason: String
+  days: Int
+}
+
+# ─────────────────────────────────────────────
+# Cargo & packing lists
+# ─────────────────────────────────────────────
+
+type Cargo {
+  cargoItemType: CargoItemTypeEnum
+  grossWeight: MetricValue
+  totalCbm: Float
+}
+
+type PackingList {
+  cargo: Cargo
+  lines: [PackingListLine!]
+}
+
+type PackingListLine {
+  lot: Lot
+  quantity: Int
+  cbm: Float
+}
+
+# ─────────────────────────────────────────────
+# Purchase orders, ordered line items, and lots
+# ─────────────────────────────────────────────
+
+type PurchaseOrder {
+  id: String
+  orderReferenceNumber: String
+  orderDate: ISO8601Date
+  manufacturer: NetworksAssignableInterface
+  origin: AccountLocation
+  destination: AccountLocation
+  orderedLineItems: [OrderedLineItem!]
+  closed: Boolean
+}
+
+type OrderedLineItem {
+  id: String
+  product: Product
+  quantityOrdered: Int
+  cbm: Float
+  initialCargoReadyDate: ISO8601Date
+  requiredDeliveryDate: ISO8601Date
+  erpLineId: String
+  lots: [Lot!]
+}
+
+type Lot {
+  id: String
+  quantityFulfilled: Int
+  cbm: Float
+  cargoReadyDate: RichDate
+  booking: Booking
+  reasonForChange: ReasonForChange
+  lastUpdated: LastUpdated
+}
+
+type ReasonForChange {
+  code: String
+  description: String
+}
+
+# ─────────────────────────────────────────────
+# Products, categories, attributes
+# ─────────────────────────────────────────────
+
+type Product {
+  id: String
+  name: String
+  skuCode: String
+  properties: [ProductProperty!]
+  category: ProductCategory
+}
+
+type ProductProperty {
+  name: String
+  value: String
+}
+
+type ProductCategory {
+  id: String
+  name: String
+}
+
+type CoreProduct {
+  id: String
+  name: String
+  skuCode: String
+  status: CoreProductStatus
+  category: CoreProductCategory
+  characteristics: CoreProductCharacteristics
+  attributes: [CoreProductAttributeWithValue!]
+  buyCostPrice: MoneyWithBigDecimalValue
+  sellCostPrice: MoneyWithBigDecimalValue
+  tariffCode: CoreProductTariffCode
+}
+
+type CoreProductCharacteristics {
+  dimensions: CoreDimensions
+  weight: MetricValue
+  perUnitCbm: PerUnitCbm
+}
+
+type CoreDimensions {
+  length: MetricValue
+  width: MetricValue
+  height: MetricValue
+}
+
+type CoreProductCategory {
+  id: String
+  name: String
+}
+
+type CoreProductAttribute {
+  id: String
+  name: String
+  type: String
+}
+
+type CoreProductAttributeWithValue {
+  attribute: CoreProductAttribute
+  value: String
+}
+
+type CoreProductTariffCode {
+  code: String
+  countryCode: CountryCode
+}
+
+# ─────────────────────────────────────────────
+# Accounts & locations
+# ─────────────────────────────────────────────
+
+type Account implements NetworksAssignableInterface {
+  uuid: String
+  label: NetworksLabelType
+  status: String
+  accountType: String
+  billingDetails: AccountBillingDetails
+  contactDetails: AccountContactDetails
+  legalInformation: AccountLegalInformation
+  locations(first: Int, after: String): AccountLocationConnection
+  products(first: Int, after: String, nameContains: String): ProductConnection
+}
+
+type AccountBillingDetails {
+  currency: Currency
+  address: Address
+}
+
+type AccountContactDetails {
+  email: String
+  phone: String
+}
+
+type AccountLegalInformation {
+  registrationNumber: String
+  vatNumber: String
+}
+
+type AccountLocation implements NetworksAssignableInterface {
+  id: String
+  label: NetworksLabelType
+  address: Address
+  countryCode: CountryCode
+}
+
+type AccountConnectionType {
+  account: Account
+  connectionType: AccountConnectionTypeEnum
+}
+
+# ─────────────────────────────────────────────
+# Connection / edge types (Relay-style pagination)
+# ─────────────────────────────────────────────
+
+type BookingConnection {
+  nodes: [Booking!]
+  edges: [BookingEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type BookingEdge {
+  cursor: String!
+  node: Booking
+}
+
+type PurchaseOrderConnection {
+  nodes: [PurchaseOrder!]
+  edges: [PurchaseOrderEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type PurchaseOrderEdge {
+  cursor: String!
+  node: PurchaseOrder
+}
+
+type ProductConnection {
+  nodes: [Product!]
+  edges: [ProductEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductEdge {
+  cursor: String!
+  node: Product
+}
+
+type CoreProductConnection {
+  nodes: [CoreProduct!]
+  edges: [CoreProductEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type CoreProductEdge {
+  cursor: String!
+  node: CoreProduct
+}
+
+type CoreProductCategoryConnection {
+  nodes: [CoreProductCategory!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type CoreProductAttributeConnection {
+  nodes: [CoreProductAttribute!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type PackingListConnection {
+  nodes: [PackingList!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type LotConnection {
+  nodes: [Lot!]
+  edges: [LotEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type LotEdge {
+  cursor: String!
+  node: Lot
+}
+
+type AccountLocationConnection {
+  nodes: [AccountLocation!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type AccountConnectionTypeConnection {
+  nodes: [AccountConnectionType!]
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+# ─────────────────────────────────────────────
+# Input objects
+# ─────────────────────────────────────────────
+
+input PackingListFindBy {
+  key: PackingListFindByEnum!
+  value: String!
+}
+
+input SearchAssignableAccountsFiltersInput {
+  accountTypes: [AccountConnectionTypeEnum!]
+  searchQuery: String
+}
+
+input MetricValueInput {
+  value: Float!
+  unit: String!
+}
+
+input MoneyInput {
+  value: Float!
+  currency: Currency!
+}
+
+input MoneyWithBigDecimalValueInput {
+  value: BigDecimal!
+  currency: Currency!
+}
+
+input CoreDimensionsInput {
+  length: MetricValueInput
+  width: MetricValueInput
+  height: MetricValueInput
+}
+
+input CoreProductCharacteristicsInput {
+  dimensions: CoreDimensionsInput
+  weight: MetricValueInput
+  perUnitCbm: Float
+}
+
+input CoreProductTariffCodeInput {
+  code: String!
+  countryCode: CountryCode!
+}
+
+input CoreProductAttributeWithValueInput {
+  attributeId: String!
+  value: String!
+}
+
+input CreateCoreProductInput {
+  name: String!
+  skuCode: String!
+  categoryId: String
+  characteristics: CoreProductCharacteristicsInput
+  attributes: [CoreProductAttributeWithValueInput!]
+  buyCostPrice: MoneyWithBigDecimalValueInput
+  sellCostPrice: MoneyWithBigDecimalValueInput
+  tariffCode: CoreProductTariffCodeInput
+}
+
+input UpdateCoreProductInput {
+  id: String!
+  name: String
+  skuCode: String
+  categoryId: String
+  characteristics: CoreProductCharacteristicsInput
+  attributes: [CoreProductAttributeWithValueInput!]
+}
+
+input ArchiveCoreProductInput {
+  id: String!
+}
+
+input UnarchiveCoreProductInput {
+  id: String!
+}
+
+input CreateCoreProductCategoryInput {
+  name: String!
+}
+
+input UpdateCoreProductCategoryInput {
+  id: String!
+  name: String!
+}
+
+input DeleteCoreProductCategoryInput {
+  id: String!
+}
+
+input CreateCoreProductAttributeInput {
+  name: String!
+  type: String!
+}
+
+input UpdateCoreProductAttributeInput {
+  id: String!
+  name: String
+}
+
+input DeleteCoreProductAttributeInput {
+  id: String!
+}
+
+input ProductInput {
+  name: String!
+  skuCode: String!
+  properties: [ProductPropertyInput!]
+}
+
+input ProductPropertyInput {
+  name: String!
+  value: String!
+}
+
+input CreateProductInput {
+  accountUuid: String!
+  product: ProductInput!
+}
+
+input UpdateProductInput {
+  id: String!
+  product: ProductInput!
+}
+
+input ArchiveProductInput {
+  id: String!
+}
+
+input UnarchiveProductInput {
+  id: String!
+}
+
+input OrderedLineItemInput {
+  productSku: String!
+  quantityOrdered: Int!
+  cbm: Float
+  initialCargoReadyDate: ISO8601Date
+  requiredDeliveryDate: ISO8601Date
+  erpLineId: String
+}
+
+input CreateOrderInput {
+  orderReferenceNumber: String!
+  orderDate: ISO8601Date!
+  manufacturerID: String
+  originID: String
+  destinationID: String
+  orderedLineItems: [OrderedLineItemInput!]!
+}
+
+input UpdateOrderInput {
+  orderReferenceNumber: String!
+  orderDate: ISO8601Date
+  orderedLineItems: [OrderedLineItemInput!]
+}
+
+input ClosePurchaseOrderInput {
+  orderReferenceNumber: String!
+}
+
+input DeleteOrderInput {
+  orderReferenceNumber: String!
+}
+
+input LotInput {
+  lotId: String!
+  quantityFulfilled: Int
+  cargoReadyDate: ISO8601Date
+}
+
+input UpdateLotsInput {
+  lots: [LotInput!]!
+}
+
+input UpdateLotEstimatesInput {
+  lotId: String!
+  cargoReadyDate: ISO8601Date
+}
+
+# ─────────────────────────────────────────────
+# Payloads
+# ─────────────────────────────────────────────
+
+type Error {
+  path: String
+  message: String
+}
+
+type CreateCoreProductPayload {
+  coreProduct: CoreProduct
+  errors: [Error!]
+}
+
+type UpdateCoreProductPayload {
+  coreProduct: CoreProduct
+  errors: [Error!]
+}
+
+type ArchiveCoreProductPayload {
+  coreProduct: CoreProduct
+  errors: [Error!]
+}
+
+type UnarchiveCoreProductPayload {
+  coreProduct: CoreProduct
+  errors: [Error!]
+}
+
+type CreateCoreProductCategoryPayload {
+  category: CoreProductCategory
+  errors: [Error!]
+}
+
+type UpdateCoreProductCategoryPayload {
+  category: CoreProductCategory
+  errors: [Error!]
+}
+
+type DeleteCoreProductCategoryPayload {
+  id: String
+  errors: [Error!]
+}
+
+type CreateCoreProductAttributePayload {
+  attribute: CoreProductAttribute
+  errors: [Error!]
+}
+
+type UpdateCoreProductAttributePayload {
+  attribute: CoreProductAttribute
+  errors: [Error!]
+}
+
+type DeleteCoreProductAttributePayload {
+  id: String
+  errors: [Error!]
+}
+
+type CreateProductPayload {
+  product: Product
+  errors: [Error!]
+}
+
+type UpdateProductPayload {
+  product: Product
+  errors: [Error!]
+}
+
+type ArchiveProductPayload {
+  product: Product
+  errors: [Error!]
+}
+
+type UnarchiveProductPayload {
+  product: Product
+  errors: [Error!]
+}
+
+type CreateOrderPayload {
+  purchaseOrder: PurchaseOrder
+  errors: [Error!]
+}
+
+type UpdateOrderPayload {
+  purchaseOrder: PurchaseOrder
+  errors: [Error!]
+}
+
+type ClosePurchaseOrderPayload {
+  purchaseOrder: PurchaseOrder
+  errors: [Error!]
+}
+
+type DeleteOrderPayload {
+  id: String
+  errors: [Error!]
+}
+
+type UpdateLotsPayload {
+  lots: [Lot!]
+  errors: [Error!]
+}
+
+type UpdateLotEstimatesPayload {
+  lots: [Lot!]
+  errors: [Error!]
+}
+
+# ─────────────────────────────────────────────
+# Query root
+# ─────────────────────────────────────────────
+
+type QueryRoot {
+  "Retrieve an account by its UUID, with nested locations and products."
+  account(uuid: String!): Account
+
+  "Search accounts assignable to the given account (customers, suppliers, ...)."
+  searchAssignableAccounts(
+    accountId: String!
+    searchAssignableAccountsFiltersInput: SearchAssignableAccountsFiltersInput!
+  ): AccountConnectionTypeConnection
+
+  "List / filter products for the authenticated account."
+  products(first: Int, after: String, nameContains: String): ProductConnection
+
+  "List core products (catalog with characteristics, attributes, pricing)."
+  coreProducts(first: Int, after: String): CoreProductConnection
+
+  "List product categories."
+  coreProductCategories(first: Int, after: String): CoreProductCategoryConnection
+
+  "List product attributes."
+  coreProductAttributes(first: Int, after: String): CoreProductAttributeConnection
+
+  "Retrieve a single purchase order by reference."
+  purchaseOrder(orderReferenceNumber: String!): PurchaseOrder
+
+  "List / filter purchase orders."
+  purchaseOrders(first: Int, after: String): PurchaseOrderConnection
+
+  "Query bookings, optionally filtered by Zencargo references."
+  bookings(zencargoReferences: [String!], first: Int, after: String): BookingConnection
+
+  "Query packing lists for a booking or a specific cargo."
+  packingLists(findBy: PackingListFindBy!): PackingListConnection
+}
+
+# ─────────────────────────────────────────────
+# Mutation root
+# ─────────────────────────────────────────────
+
+type Mutation {
+  # Products (legacy product surface)
+  productsCreateProduct(input: CreateProductInput!): CreateProductPayload
+  productsUpdateProduct(input: UpdateProductInput!): UpdateProductPayload
+  productsArchiveProduct(input: ArchiveProductInput!): ArchiveProductPayload
+  productsUnarchiveProduct(input: UnarchiveProductInput!): UnarchiveProductPayload
+
+  # Core products
+  createCoreProduct(input: CreateCoreProductInput!): CreateCoreProductPayload
+  updateCoreProduct(input: UpdateCoreProductInput!): UpdateCoreProductPayload
+  archiveCoreProduct(input: ArchiveCoreProductInput!): ArchiveCoreProductPayload
+  unarchiveCoreProduct(input: UnarchiveCoreProductInput!): UnarchiveCoreProductPayload
+
+  # Categories
+  createCoreProductCategory(input: CreateCoreProductCategoryInput!): CreateCoreProductCategoryPayload
+  updateCoreProductCategory(input: UpdateCoreProductCategoryInput!): UpdateCoreProductCategoryPayload
+  deleteCoreProductCategory(input: DeleteCoreProductCategoryInput!): DeleteCoreProductCategoryPayload
+
+  # Attributes
+  createCoreProductAttribute(input: CreateCoreProductAttributeInput!): CreateCoreProductAttributePayload
+  updateCoreProductAttribute(input: UpdateCoreProductAttributeInput!): UpdateCoreProductAttributePayload
+  deleteCoreProductAttribute(input: DeleteCoreProductAttributeInput!): DeleteCoreProductAttributePayload
+
+  # Purchase orders & lots
+  purchaseOrdersCreateOrder(input: CreateOrderInput!): CreateOrderPayload
+  purchaseOrdersUpdateOrder(input: UpdateOrderInput!): UpdateOrderPayload
+  purchaseOrdersCloseOrder(input: ClosePurchaseOrderInput!): ClosePurchaseOrderPayload
+  purchaseOrdersDeleteOrder(input: DeleteOrderInput!): DeleteOrderPayload
+  purchaseOrdersUpdateLots(input: UpdateLotsInput!): UpdateLotsPayload
+  purchaseOrdersUpdateLotEstimates(input: UpdateLotEstimatesInput!): UpdateLotEstimatesPayload
+}
+
+# Zencargo names the query root type "QueryRoot" (per the documented reference).
+schema {
+  query: QueryRoot
+  mutation: Mutation
+}

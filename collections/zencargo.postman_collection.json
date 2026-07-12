@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "Zencargo GraphQL API",
+    "description": "Zencargo digital freight forwarding & supply-chain GraphQL API. All operations are POST requests to a single per-tenant endpoint: https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql. Authentication is HTTP Basic using an API Key ID (UUID) as the username and its secret as the password. Set {{basicAuthBase64}} to base64(keyId:secret) or use Postman's Basic Auth with the ID/secret. Queries and mutations below are grounded in the public docs at https://api-docs.zencargo.com; some payloads are illustrative. Realtime updates are delivered via outbound HTTP webhooks, not WebSocket.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      { "key": "username", "value": "{{apiKeyId}}", "type": "string" },
+      { "key": "password", "value": "{{apiKeySecret}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "accountReference", "value": "zawesome", "type": "string" },
+    { "key": "environment", "value": "production", "type": "string" },
+    { "key": "baseUrl", "value": "https://{{accountReference}}.api.{{environment}}.zencargo.com/graphql", "type": "string" },
+    { "key": "apiKeyId", "value": "", "type": "string" },
+    { "key": "apiKeySecret", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Query booking documents by reference",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { zencargoReference bookingStage { value } bookingDocuments { documentType description assetUrl } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Fetch a booking and its attached documents (assetUrl is the download link)."
+          }
+        },
+        {
+          "name": "Query booking cargo and parties",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { zencargoReference modeOfTransport loadType incoterms { value } consignor { label { long } } consignee { label { long } } forwarder { label { long } } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Retrieve mode of transport, load type, incoterms, and the consignor/consignee/forwarder for a booking."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipment Visibility",
+      "item": [
+        {
+          "name": "Query scheduled legs and voyage milestone",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { zencargoReference scheduledLegs { modeOfTransport fromTerminal { name unlocode } toTerminal { name unlocode } estimatedDepartureDate estimatedArrivalDate actualDepartureLocalDateTime actualArrivalLocalDateTime } voyageMilestone { name occurred latestEstimate actual vesselName portName } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Track shipment progress: scheduled carriage legs with ETD/ETA/ATD/ATA plus the current voyage milestone."
+          }
+        },
+        {
+          "name": "Query cargo journey details",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($zencargoReferences: [String!]) { bookings(zencargoReferences: $zencargoReferences) { nodes { cargoJourneyDetails { cargoId estimatedCollectionDateTime actualCollectionDateTime estimatedDeliveryDateTime actualDeliveryDateTime } } } }\",\n  \"variables\": { \"zencargoReferences\": [\"ZTEST-1\"] }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Estimated vs. actual collection and delivery per cargo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchase Orders",
+      "item": [
+        {
+          "name": "Create a purchase order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($input: CreateOrderInput!) { purchaseOrdersCreateOrder(input: $input) { purchaseOrder { orderReferenceNumber } errors { path message } } }\",\n  \"variables\": {\n    \"input\": {\n      \"orderReferenceNumber\": \"PO-SEAWARD-2\",\n      \"orderDate\": \"2021-01-01\",\n      \"manufacturerID\": \"uuid12345\",\n      \"originID\": \"uuid12345\",\n      \"destinationID\": \"uuid98765\",\n      \"orderedLineItems\": [ { \"productSku\": \"10000\", \"quantityOrdered\": 10000, \"cbm\": 32.0, \"initialCargoReadyDate\": \"2020-03-16\", \"requiredDeliveryDate\": \"2020-05-04\", \"erpLineId\": \"YOUR_ERP_LINE_ID\" } ]\n    }\n  }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Create a purchase order with ordered line items (PurchaseOrdersCreateOrder mutation)."
+          }
+        },
+        {
+          "name": "Query a purchase order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($ref: String!) { purchaseOrder(orderReferenceNumber: $ref) { orderReferenceNumber orderDate orderedLineItems { product { skuCode } quantityOrdered lots { quantityFulfilled cargoReadyDate { date } } } } }\",\n  \"variables\": { \"ref\": \"PO-SEAWARD-2\" }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Retrieve a purchase order with its line items and SKU-level Lots."
+          }
+        },
+        {
+          "name": "Close a purchase order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($input: ClosePurchaseOrderInput!) { purchaseOrdersCloseOrder(input: $input) { purchaseOrder { orderReferenceNumber } errors { path message } } }\",\n  \"variables\": { \"input\": { \"orderReferenceNumber\": \"PO-SEAWARD-2\" } }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Close a purchase order (PurchaseOrdersCloseOrder mutation)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Query products (SKU codes)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query { products(first: 20) { nodes { name skuCode } } }\"\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "List products and their SKU codes (the documented 'first call' example)."
+          }
+        },
+        {
+          "name": "Filter products by name",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query { products(first: 2, nameContains: \\\"chair\\\") { nodes { name skuCode } } }\"\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Find the first two products whose name contains 'chair'."
+          }
+        },
+        {
+          "name": "Create a core product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"mutation($input: CreateCoreProductInput!) { createCoreProduct(input: $input) { coreProduct { id skuCode name } errors { path message } } }\",\n  \"variables\": { \"input\": { \"name\": \"Frozen Banana\", \"skuCode\": \"10000\" } }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Create a core product (createCoreProduct mutation)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Packing Lists",
+      "item": [
+        {
+          "name": "Query packing lists for a booking",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($findBy: PackingListFindBy!) { packingLists(findBy: $findBy) { nodes { cargo { grossWeight { value unit } } lines { quantity lot { product { skuCode } } } } } }\",\n  \"variables\": { \"findBy\": { \"key\": \"BOOKING_REFERENCE\", \"value\": \"ZTEST-1\" } }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Query packing lists for a booking (BOOKING_REFERENCE) or a cargo (CARGO_ID)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts & Locations",
+      "item": [
+        {
+          "name": "Query account with products",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query { account(uuid: \\\"a7353774-9795-434b-a1f8-7582b6afd345\\\") { label { long } products(first: 5) { nodes { name skuCode } } } }\"\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Retrieve an account by UUID with a nested products connection."
+          }
+        },
+        {
+          "name": "Search assignable accounts",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"query($accountId: String!, $filters: SearchAssignableAccountsFiltersInput!) { searchAssignableAccounts(accountId: $accountId, searchAssignableAccountsFiltersInput: $filters) { nodes { account { label { long } } connectionType } } }\",\n  \"variables\": { \"accountId\": \"a7353774-9795-434b-a1f8-7582b6afd345\", \"filters\": { \"accountTypes\": [\"SUPPLIER\"], \"searchQuery\": \"\" } }\n}" },
+            "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"] },
+            "description": "Search assignable accounts (e.g. suppliers) to resolve origin/destination/manufacturer IDs."
+          }
+        }
+      ]
+    }
+  ]
+}
