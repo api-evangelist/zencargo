@@ -9,7 +9,20 @@ description: Zencargo is a digital freight forwarder and supply-chain visibility
   HTTP webhooks for booking and purchase-order events. The API is
   customer-provisioned - each account is issued a dedicated staging and
   production endpoint and API-key credentials by their Zencargo account manager.
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: enterprise
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Enterprise · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/zencargo.png
 tags:
 - Freight Forwarding
 - Supply Chain
