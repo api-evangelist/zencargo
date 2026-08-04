@@ -1,0 +1,21 @@
+{
+  "repo": "zencargo",
+  "feeds": [
+    {
+      "source": "https://www.zencargo.com/feed/",
+      "feed_url": "https://www.zencargo.com/feed/",
+      "title": "",
+      "saved": 0,
+      "method": "feed"
+    },
+    {
+      "source": "https://www.zencargo.com/resources/",
+      "feed_url": "https://www.zencargo.com/feed/",
+      "title": "",
+      "saved": 0,
+      "method": "discovered"
+    }
+  ],
+  "post_count": 12,
+  "fetched": "2026-08-01T15:49:00Z"
+}
