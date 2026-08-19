@@ -36,7 +36,7 @@ tags:
 - GraphQL
 created: '2026-07-12'
 modified: '2026-07-12'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: zencargo:zencargo-bookings-api
   name: Zencargo Bookings API
