@@ -32,6 +32,17 @@ tags:
 - Bookings
 - Supply Chain Visibility
 - Freight
+- Software-as-a-Service
+- GraphQL
+tags_raw:
+- Freight Forwarding
+- Supply Chain
+- Logistics
+- Ocean Freight
+- Shipment Tracking
+- Bookings
+- Supply Chain Visibility
+- Freight
 - SaaS
 - GraphQL
 created: '2026-07-12'
@@ -101,6 +112,10 @@ apis:
 - aid: zencargo:zencargo-products-api
   name: Zencargo Products API
   tags:
+  - Product
+  - Catalog
+  - SKU
+  tags_raw:
   - Products
   - Catalog
   - SKU
@@ -139,6 +154,10 @@ apis:
 - aid: zencargo:zencargo-accounts-locations-api
   name: Zencargo Accounts and Locations API
   tags:
+  - Account
+  - Locations
+  - Network
+  tags_raw:
   - Accounts
   - Locations
   - Network
@@ -159,6 +178,10 @@ apis:
 - aid: zencargo:zencargo-webhooks
   name: Zencargo Webhooks
   tags:
+  - Webhook
+  - Event
+  - Notification
+  tags_raw:
   - Webhooks
   - Events
   - Notifications
