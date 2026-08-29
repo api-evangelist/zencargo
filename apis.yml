@@ -9,6 +9,17 @@ description: Zencargo is a digital freight forwarder and supply-chain visibility
   HTTP webhooks for booking and purchase-order events. The API is
   customer-provisioned - each account is issued a dedicated staging and
   production endpoint and API-key credentials by their Zencargo account manager.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: enterprise
   onboarding: self-serve
