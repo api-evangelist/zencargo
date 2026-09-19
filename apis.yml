@@ -40,7 +40,7 @@ tags:
 - Logistics
 - Ocean Freight
 - Shipment Tracking
-- Bookings
+- Booking
 - Supply Chain Visibility
 - Freight
 - Software-as-a-Service
@@ -63,6 +63,10 @@ apis:
 - aid: zencargo:zencargo-bookings-api
   name: Zencargo Bookings API
   tags:
+  - Booking
+  - Freight
+  - GraphQL
+  tags_raw:
   - Bookings
   - Freight
   - GraphQL
@@ -166,8 +170,8 @@ apis:
   name: Zencargo Accounts and Locations API
   tags:
   - Account
-  - Locations
-  - Network
+  - Location
+  - Networks
   tags_raw:
   - Accounts
   - Locations
