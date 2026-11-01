@@ -1,4 +1,4 @@
-# Zencargo (zencargo)
+# Zencargo
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,199 +64,125 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Zencargo is a digital freight forwarder and supply-chain visibility platform for ocean, air, road, and rail shipments. Its **GraphQL API** gives enterprise customers programmatic access to bookings, shipment tracking and voyage milestones, purchase orders, products, packing lists, and accounts, plus HTTP webhooks for booking and purchase-order events.
+Zencargo is a digital freight forwarder and supply-chain visibility platform for ocean, air, road, and rail shipments. Its GraphQL API gives enterprise customers programmatic access to bookings, shipment tracking and voyage milestones, purchase orders, products, packing lists, and accounts, plus HTTP webhooks for booking and purchase-order events. The API is customer-provisioned - each account is issued a dedicated staging and production endpoint and API-key credentials by their Zencargo account manager.
 
-## Access model (read this first)
+**Areas:** Freight Forwarding · Supply Chain · Logistics · Ocean Freight · Shipment Tracking · Booking · Supply Chain Visibility · Freight · Software-as-a-Service · GraphQL
 
-The Zencargo API is **not openly self-service**. It is a customer-provisioned GraphQL API:
+## Zencargo on APIs.io
 
-- **You must be a Zencargo customer.** Your account manager provisions a dedicated **staging** and **production** endpoint of the form `https://{accountReference}.api.{environment}.zencargo.com/graphql` (for example `https://zawesome.api.production.zencargo.com/graphql`). There is no single shared public base URL.
-- **All operations are `POST /graphql`.** GraphQL — one endpoint, operation defined in the request body. There is no REST resource layout.
-- **Authentication is HTTP Basic.** You generate an API Key (an ID/UUID + secret) in the Zencargo app under *Profile Settings > API Keys*. Join them as `keyId:secret`, base64-encode, and send `Authorization: Basic <base64>`.
-- **A live GraphQL gateway exists** at `https://graphql.zencargo.com/` (Apollo Federation / Apollo Router) and at each tenant subdomain, but both reject unauthenticated introspection. The public schema in this repo is modeled from the official documentation at [api-docs.zencargo.com](https://api-docs.zencargo.com/), not from an authenticated introspection dump.
+Everything profiled for Zencargo is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/zencargo/](https://apis.io/providers/zencargo/)** — or go straight to one of the APIs or properties below.
 
-Everything published here that is not directly quoted from the public docs is marked as **modeled**. The GraphQL SDL is a grounded, representative schema (documented type/field/enum names, trimmed field sets on the largest objects).
+### APIs (7)
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/zencargo/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/zencargo/refs/heads/main/apis.yml)
+- [Zencargo Bookings API](https://apis.io/apis/zencargo/zencargo-bookings-api/) — Query bookings by Zencargo reference and retrieve booking details: cargo, consignor/consignee, forwarder, incoterms, load type, mode of transport, bills of…
+- [Zencargo Shipment Visibility API](https://apis.io/apis/zencargo/zencargo-shipment-visibility-api/) — Track shipment progress through scheduled carriage legs, cargo journey details (estimated/actual collection and delivery), and voyage milestones (collected,…
+- [Zencargo Purchase Orders API](https://apis.io/apis/zencargo/zencargo-purchase-orders-api/) — Create, query, update, close, and delete purchase orders and their ordered line items and SKU-level Lots. Keeps an ERP in sync with Zencargo as the source…
+- [Zencargo Products API](https://apis.io/apis/zencargo/zencargo-products-api/) — Manage the product catalog - create, query, update, archive, and unarchive products (and core products with characteristics, dimensions, weights, tariff…
+- [Zencargo Packing Lists API](https://apis.io/apis/zencargo/zencargo-packing-lists-api/) — Query packing lists for a booking (BOOKING_REFERENCE) or a specific cargo (CARGO_ID), returning per-container lines with the Lot and Product behind each…
+- [Zencargo Accounts and Locations API](https://apis.io/apis/zencargo/zencargo-accounts-locations-api/) — Retrieve account details by UUID and search assignable accounts (customers, suppliers, manufacturers) and their locations to resolve the origin,…
+- [Zencargo Webhooks](https://apis.io/apis/zencargo/zencargo-webhooks/) — Outbound HTTP webhooks. Zencargo POSTs a JSON payload (topic, targetType, targetId) to a customer-registered HTTPS callback URL when events such as…
 
-## Tags
+### Published properties
 
-- Freight Forwarding
-- Supply Chain
-- Logistics
-- Ocean Freight
-- Shipment Tracking
-- Bookings
-- Supply Chain Visibility
-- Freight
-- SaaS
-- GraphQL
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## Timestamps
+#### MCP servers (1)
 
-- **Created:** 2026-07-12
-- **Modified:** 2026-07-12
+Model Context Protocol servers that expose the API to agents.
 
-## APIs
+- [zencargo](https://apis.io/servers/zencargo/zencargo/)
 
-All GraphQL surfaces below share the single per-tenant endpoint `https://{accountReference}.api.production.zencargo.com/graphql`.
+#### Collections (1)
 
-### Zencargo Bookings API
+Postman and Open Collection request collections.
 
-Query bookings by Zencargo reference and retrieve booking details: cargo, consignor/consignee, forwarder, incoterms, load type, mode of transport, bills of lading, required delivery date, and attached booking documents (assetUrl for download).
+- [Zencargo GraphQL API](https://apis.io/collections/zencargo/open-zencargo/)
 
-- **Human URL:** [https://api-docs.zencargo.com/download_booking_documents/](https://api-docs.zencargo.com/download_booking_documents/)
-- **Base URL:** `https://{accountReference}.api.production.zencargo.com/graphql`
+#### Security (2)
 
-#### Tags
+Authentication, trust centre, and vulnerability disclosure.
 
-- Bookings
-- Freight
-- GraphQL
+- [Zencargo Authentication](https://apis.io/security/zencargo/zencargo-authentication/)
+- [Zencargo Domain Security](https://apis.io/security/zencargo/zencargo-domain-security/)
 
-#### Properties
+#### Plans and pricing (1)
 
-- [Documentation](https://api-docs.zencargo.com/download_booking_documents/)
-- [API Reference](https://api-docs.zencargo.com/object/booking/)
-- [GraphQL](graphql/zencargo.graphql) — [GraphQL SDL](https://spec.graphql.org/)
-- [Postman Collection](collections/zencargo.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/zencargo.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+Published plans, tiers and prices.
 
-### Zencargo Shipment Visibility API
+- [Zencargo Plans Pricing](https://apis.io/plans/zencargo/zencargo-plans-pricing/)
 
-Track shipment progress through scheduled carriage legs, cargo journey details (estimated/actual collection and delivery), and voyage milestones (collected, gate in, cargo aboard, departed/arrived terminal, delivered) with estimated and actual timestamps for predictive ETAs.
+#### Rate limits (1)
 
-- **Human URL:** [https://api-docs.zencargo.com/object/voyagemilestone/](https://api-docs.zencargo.com/object/voyagemilestone/)
-- **Base URL:** `https://{accountReference}.api.production.zencargo.com/graphql`
+Published request limits.
 
-#### Tags
+- [Zencargo Rate Limits](https://apis.io/rate-limits/zencargo/zencargo-rate-limits/)
 
-- Shipment Tracking
-- Supply Chain Visibility
-- Milestones
+#### FinOps (1)
 
-#### Properties
+What the API costs to run, by operation.
 
-- [Documentation](https://api-docs.zencargo.com/object/scheduledleg/)
-- [API Reference](https://api-docs.zencargo.com/object/voyagemilestone/)
-- [GraphQL](graphql/zencargo.graphql) — [GraphQL SDL](https://spec.graphql.org/)
-- [Postman Collection](collections/zencargo.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/zencargo.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+- [Zencargo Finops](https://apis.io/finops/zencargo/zencargo-finops/)
 
-### Zencargo Purchase Orders API
+## Where to find this API
 
-Create, query, update, close, and delete purchase orders and their ordered line items and SKU-level Lots. Keeps an ERP in sync with Zencargo as the source of truth for pre-booking PO data.
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
-- **Human URL:** [https://api-docs.zencargo.com/query_purchase_orders/](https://api-docs.zencargo.com/query_purchase_orders/)
-- **Base URL:** `https://{accountReference}.api.production.zencargo.com/graphql`
-
-#### Tags
-
-- Purchase Orders
-- Supply Chain
-- Lots
-
-#### Properties
-
-- [Documentation](https://api-docs.zencargo.com/create_purchase_orders/)
-- [API Reference](https://api-docs.zencargo.com/object/purchaseorder/)
-- [GraphQL](graphql/zencargo.graphql) — [GraphQL SDL](https://spec.graphql.org/)
-- [Postman Collection](collections/zencargo.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/zencargo.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Zencargo Products API
-
-Manage the product catalog - create, query, update, archive, and unarchive products (and core products with characteristics, dimensions, weights, tariff codes, and pricing), plus product categories and attributes.
-
-- **Human URL:** [https://api-docs.zencargo.com/query_product/](https://api-docs.zencargo.com/query_product/)
-- **Base URL:** `https://{accountReference}.api.production.zencargo.com/graphql`
-
-#### Tags
-
-- Products
-- Catalog
-- SKU
-
-#### Properties
-
-- [Documentation](https://api-docs.zencargo.com/create_product/)
-- [API Reference](https://api-docs.zencargo.com/object/coreproduct/)
-- [GraphQL](graphql/zencargo.graphql) — [GraphQL SDL](https://spec.graphql.org/)
-- [Postman Collection](collections/zencargo.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/zencargo.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Zencargo Packing Lists API
-
-Query packing lists for a booking (`BOOKING_REFERENCE`) or a specific cargo (`CARGO_ID`), returning per-container lines with the Lot and Product behind each packed item.
-
-- **Human URL:** [https://api-docs.zencargo.com/query_packing_lists/](https://api-docs.zencargo.com/query_packing_lists/)
-- **Base URL:** `https://{accountReference}.api.production.zencargo.com/graphql`
-
-#### Tags
-
-- Packing Lists
-- Cargo
-- FCL
-
-#### Properties
-
-- [Documentation](https://api-docs.zencargo.com/query_packing_lists/)
-- [API Reference](https://api-docs.zencargo.com/object/packinglist/)
-- [GraphQL](graphql/zencargo.graphql) — [GraphQL SDL](https://spec.graphql.org/)
-- [Postman Collection](collections/zencargo.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/zencargo.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Zencargo Accounts and Locations API
-
-Retrieve account details by UUID and search assignable accounts (customers, suppliers, manufacturers) and their locations to resolve the origin, destination, and manufacturer IDs referenced when creating purchase orders and bookings.
-
-- **Human URL:** [https://api-docs.zencargo.com/query_accounts_and_locations/](https://api-docs.zencargo.com/query_accounts_and_locations/)
-- **Base URL:** `https://{accountReference}.api.production.zencargo.com/graphql`
-
-#### Tags
-
-- Accounts
-- Locations
-- Network
-
-#### Properties
-
-- [Documentation](https://api-docs.zencargo.com/query_accounts_and_locations/)
-- [API Reference](https://api-docs.zencargo.com/object/account/)
-- [GraphQL](graphql/zencargo.graphql) — [GraphQL SDL](https://spec.graphql.org/)
-- [Postman Collection](collections/zencargo.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/zencargo.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Zencargo Webhooks
-
-Outbound HTTP webhooks. Zencargo POSTs a JSON payload (`topic`, `targetType`, `targetId`) to a customer-registered HTTPS callback URL when events such as `BOOKING_CREATED` occur, signed with a base64 `Zencargo-Hmac-SHA256` header for verification. This is server-to-endpoint HTTP push, **not** a WebSocket or GraphQL subscription. Subscriptions are configured in the Zencargo app, not via the API.
-
-- **Human URL:** [https://api-docs.zencargo.com/webhooks/](https://api-docs.zencargo.com/webhooks/)
-
-#### Tags
-
-- Webhooks
-- Events
-- Notifications
-
-#### Properties
-
-- [Documentation](https://api-docs.zencargo.com/webhooks/)
-
-## Common Properties
-
-- [Domain Security](security/zencargo-domain-security.yml)
-- [Authentication](authentication/zencargo-authentication.yml)
-- [GitHub Organization](https://github.com/zencargo)
-- [LinkedIn](https://www.linkedin.com/company/zencargo)
 - [Website](https://www.zencargo.com/)
 - [Documentation](https://api-docs.zencargo.com/)
-- [Plans](plans/zencargo-plans-pricing.yml)
-- [Rate Limits](rate-limits/zencargo-rate-limits.yml)
-- [Fin Ops](finops/zencargo-finops.yml)
 - [Blog](https://www.zencargo.com/resources/)
+- [GitHub](https://github.com/zencargo)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Kin Score 23.4** — emerging · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 65.0 |
+| Contract quality | 35.1 |
+| Contract governance | 0.0 |
+| Operational transparency | 10.5 |
+| Developer ergonomics | 31.0 |
+| Access clarity | 5.3 |
+
+**Agent readiness 28.3** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | verified |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | — |
+| OpenAPI Examples | — |
+| Rate Limit Signal | derived (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | na |
+
+**Regulatory alignment 11.8** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/zencargo/](https://apis.io/providers/zencargo/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Zencargo: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/zencargo/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
